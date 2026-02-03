@@ -1,65 +1,66 @@
-import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <section className="flex flex-col gap-10">
+      <div className="rounded-3xl border border-slate-200 bg-white/80 p-10 shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900/70">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+          MiniCommerce
+        </p>
+        <h1 className="mt-4 text-4xl font-semibold text-slate-900 dark:text-white">
+          Build the next generation of your e-commerce experience
+        </h1>
+        <p className="mt-4 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+          This demo showcases Firebase authentication and an admin-only product
+          creation flow. Log in to explore protected routes.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Login
+          </Link>
+          <Link
+            href="/signup"
+            className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:text-white"
           >
-            Documentation
-          </a>
+            Create account
+          </Link>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <details className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+        <summary className="flex cursor-pointer items-center gap-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-xs font-bold uppercase tracking-widest text-slate-600 dark:border-slate-700 dark:text-slate-200">
+            i
+          </span>
+          <span>Info</span>
+          <span className="ml-auto text-xs font-normal text-slate-500 dark:text-slate-400">
+            Click to expand
+          </span>
+        </summary>
+        <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-slate-300">
+          <li>
+            <span className="font-semibold text-slate-900 dark:text-white">
+              Secure auth:
+            </span>{" "}
+            Email/password authentication powered by Firebase.
+          </li>
+          <li>
+            <span className="font-semibold text-slate-900 dark:text-white">
+              Admin workflow:
+            </span>{" "}
+            Only admins can create new products.
+          </li>
+          <li>
+            <span className="font-semibold text-slate-900 dark:text-white">
+              Next.js ready:
+            </span>{" "}
+            Built with the App Router and TailwindCSS.
+          </li>
+        </ul>
+      </details>
+    </section>
   );
 }
