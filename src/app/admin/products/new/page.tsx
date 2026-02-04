@@ -13,6 +13,23 @@ const getErrorMessage = (error: unknown) => {
   return "Something went wrong. Please try again.";
 };
 
+const uploadImages = async (files: File[]) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append("file", file));
+
+  const response = await fetch("/api/blob", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Image upload failed.");
+  }
+
+  const data = (await response.json()) as { urls: string[] };
+  return data.urls ?? [];
+};
+
 export default function NewProductPage() {
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === "Admin" || profile?.role === "SuperAdmin";
@@ -24,11 +41,11 @@ export default function NewProductPage() {
   const [price, setPrice] = useState("");
   const [currency, setCurrency] = useState("EUR");
   const [taxRate, setTaxRate] = useState("18");
-  const [image, setImage] = useState("");
   const [category, setCategory] = useState("");
   const [stock, setStock] = useState("");
   const [draft, setDraft] = useState(false);
   const [discountRate, setDiscountRate] = useState("");
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,8 +92,15 @@ export default function NewProductPage() {
       return;
     }
 
+    if (!imageFiles.length) {
+      setError("Please upload at least one product image.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      const uploadedUrls = await uploadImages(imageFiles);
+
       const payload = {
         title: title.trim(),
         description: description.trim(),
@@ -87,7 +111,8 @@ export default function NewProductPage() {
           currency,
         },
         taxRate: Number(taxRate),
-        image: image.trim(),
+        images: uploadedUrls,
+        image: uploadedUrls[0] ?? "",
         category: category.trim(),
         stock: Number(stock || 0),
         draft,
@@ -109,11 +134,11 @@ export default function NewProductPage() {
       setPrice("");
       setCurrency("EUR");
       setTaxRate("18");
-      setImage("");
       setCategory("");
       setStock("");
       setDraft(false);
       setDiscountRate("");
+      setImageFiles([]);
       setSuccess("Product created successfully.");
     } catch (submitError) {
       setError(getErrorMessage(submitError));
@@ -207,14 +232,6 @@ export default function NewProductPage() {
             </select>
           </label>
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            Image URL
-            <input
-              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
-              value={image}
-              onChange={(event) => setImage(event.target.value)}
-            />
-          </label>
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
             Stock
             <input
               type="number"
@@ -234,6 +251,26 @@ export default function NewProductPage() {
               value={discountRate}
               onChange={(event) => setDiscountRate(event.target.value)}
             />
+          </label>
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Product images *
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm file:mr-4 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:file:bg-slate-100 dark:file:text-slate-900"
+              onChange={(event) => {
+                const files = event.target.files;
+                if (files) {
+                  setImageFiles(Array.from(files));
+                }
+              }}
+            />
+            {imageFiles.length ? (
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                {imageFiles.length} file(s) selected.
+              </p>
+            ) : null}
           </label>
         </div>
 

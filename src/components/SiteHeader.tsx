@@ -13,6 +13,8 @@ export default function SiteHeader() {
     router.push("/");
   };
 
+  const isAdmin = profile?.role === "Admin" || profile?.role === "SuperAdmin";
+
   return (
     <header className="border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -29,7 +31,15 @@ export default function SiteHeader() {
           >
             Home
           </Link>
-          {profile?.role === "Admin" || profile?.role === "SuperAdmin" ? (
+          {isAdmin ? (
+            <Link
+              href="/admin/products"
+              className="text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+            >
+              Admin Products
+            </Link>
+          ) : null}
+          {isAdmin ? (
             <Link
               href="/admin/products/new"
               className="text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
