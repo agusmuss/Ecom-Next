@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
 export default function SiteHeader() {
   const router = useRouter();
   const { user, profile, logout } = useAuth();
+  const { items } = useCart();
 
   const handleLogout = async () => {
     await logout();
@@ -14,6 +16,7 @@ export default function SiteHeader() {
   };
 
   const isAdmin = profile?.role === "Admin" || profile?.role === "SuperAdmin";
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <header className="border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
@@ -30,6 +33,18 @@ export default function SiteHeader() {
             className="text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
           >
             Home
+          </Link>
+          <Link
+            href="/products"
+            className="text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+          >
+            Products
+          </Link>
+          <Link
+            href="/cart"
+            className="text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+          >
+            Cart ({totalItems})
           </Link>
           {isAdmin ? (
             <Link
