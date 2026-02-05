@@ -35,6 +35,55 @@ type ProductRecord = {
   category?: string;
   stock?: number;
   draft?: boolean;
+  stripeProductId?: string;
+  stripePriceId?: string;
+};
+
+const createStripeProduct = async (product: ProductRecord) => {
+  const response = await fetch("/api/stripe/product", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: product.title,
+      description: product.description ?? "",
+      price: product.price?.amount ?? 0,
+      currency: product.price?.currency ?? "EUR",
+      image: product.image || product.images?.[0],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Stripe product creation failed.");
+  }
+
+  return (await response.json()) as {
+    stripeProductId: string;
+    stripePriceId: string;
+  };
+};
+
+const updateStripeProduct = async (payload: {
+  stripeProductId: string;
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  image?: string;
+}) => {
+  const response = await fetch("/api/stripe/product", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error("Stripe product update failed.");
+  }
+
+  return (await response.json()) as {
+    stripeProductId: string;
+    stripePriceId?: string | null;
+  };
 };
 
 export default function AdminProductsPage() {
@@ -104,7 +153,22 @@ export default function AdminProductsPage() {
     setEditingId(null);
   };
 
-  const handleEditSave = async (productId: string) => {
+  const handleStripeSync = async (product: ProductRecord) => {
+    setError("");
+
+    try {
+      const stripeInfo = await createStripeProduct(product);
+      await updateDoc(doc(db, "products", product.id), {
+        stripeProductId: stripeInfo.stripeProductId,
+        stripePriceId: stripeInfo.stripePriceId,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (syncError) {
+      setError(getErrorMessage(syncError));
+    }
+  };
+
+  const handleEditSave = async (product: ProductRecord) => {
     setError("");
 
     if (!editValues.title || !editValues.category) {
@@ -113,16 +177,47 @@ export default function AdminProductsPage() {
     }
 
     try {
-      await updateDoc(doc(db, "products", productId), {
+      const nextPrice = Number(editValues.price || 0);
+      const currency = product.price?.currency ?? "EUR";
+
+      let stripeProductId = product.stripeProductId;
+      let stripePriceId = product.stripePriceId;
+
+      if (!stripeProductId || !stripePriceId) {
+        const stripeInfo = await createStripeProduct({
+          ...product,
+          title: editValues.title,
+          description: editValues.description,
+          price: { amount: nextPrice, currency },
+        });
+        stripeProductId = stripeInfo.stripeProductId;
+        stripePriceId = stripeInfo.stripePriceId;
+      } else {
+        const stripeInfo = await updateStripeProduct({
+          stripeProductId,
+          title: editValues.title,
+          description: editValues.description,
+          price: nextPrice,
+          currency,
+          image: product.image || product.images?.[0],
+        });
+        if (stripeInfo.stripePriceId) {
+          stripePriceId = stripeInfo.stripePriceId;
+        }
+      }
+
+      await updateDoc(doc(db, "products", product.id), {
         title: editValues.title.trim(),
         category: editValues.category.trim(),
         price: {
-          amount: Number(editValues.price || 0),
-          currency: "EUR",
+          amount: nextPrice,
+          currency,
         },
         stock: Number(editValues.stock || 0),
         draft: editValues.draft,
         description: editValues.description.trim(),
+        stripeProductId,
+        stripePriceId,
         updatedAt: serverTimestamp(),
       });
       setEditingId(null);
@@ -258,6 +353,10 @@ export default function AdminProductsPage() {
                       Price: {product.price?.amount ?? 0} {product.price?.currency ?? "EUR"}
                     </span>
                   </div>
+                  <div className="flex flex-wrap gap-3 text-xs text-slate-500 dark:text-slate-400">
+                    <span>Stripe Product: {product.stripeProductId ?? "-"}</span>
+                    <span>Stripe Price: {product.stripePriceId ?? "-"}</span>
+                  </div>
                 </div>
 
                 {editingId === product.id ? (
@@ -351,7 +450,7 @@ export default function AdminProductsPage() {
                     <>
                       <button
                         type="button"
-                        onClick={() => handleEditSave(product.id)}
+                        onClick={() => handleEditSave(product)}
                         className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500"
                       >
                         Save
@@ -373,6 +472,15 @@ export default function AdminProductsPage() {
                       >
                         Edit
                       </button>
+                      {!product.stripeProductId || !product.stripePriceId ? (
+                        <button
+                          type="button"
+                          onClick={() => handleStripeSync(product)}
+                          className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-500"
+                        >
+                          Sync Stripe
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         onClick={() => handleDelete(product)}

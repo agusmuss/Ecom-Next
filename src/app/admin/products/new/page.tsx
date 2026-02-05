@@ -30,6 +30,29 @@ const uploadImages = async (files: File[]) => {
   return data.urls ?? [];
 };
 
+const createStripeProduct = async (payload: {
+  title: string;
+  description: string;
+  price: number;
+  currency: string;
+  image?: string;
+}) => {
+  const response = await fetch("/api/stripe/product", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error("Stripe product creation failed.");
+  }
+
+  return (await response.json()) as {
+    stripeProductId: string;
+    stripePriceId: string;
+  };
+};
+
 export default function NewProductPage() {
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === "Admin" || profile?.role === "SuperAdmin";
@@ -101,6 +124,14 @@ export default function NewProductPage() {
     try {
       const uploadedUrls = await uploadImages(imageFiles);
 
+      const stripeInfo = await createStripeProduct({
+        title: title.trim(),
+        description: description.trim(),
+        price: Number(price),
+        currency,
+        image: uploadedUrls[0],
+      });
+
       const payload = {
         title: title.trim(),
         description: description.trim(),
@@ -121,6 +152,8 @@ export default function NewProductPage() {
               rate: Number(discountRate),
             }
           : null,
+        stripeProductId: stripeInfo.stripeProductId,
+        stripePriceId: stripeInfo.stripePriceId,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         createdBy: user.uid,
