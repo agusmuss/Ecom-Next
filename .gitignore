@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# webhook server
+/webhook-server/node_modules
+/webhook-server/.env
+/webhook-server/serviceAccountKey.json

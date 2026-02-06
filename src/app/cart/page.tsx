@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
-
 
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) {
@@ -13,6 +13,7 @@ const getErrorMessage = (error: unknown) => {
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, clearCart } = useCart();
+  const { user } = useAuth();
   const [error, setError] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
@@ -43,6 +44,8 @@ export default function CartPage() {
             stripePriceId: item.stripePriceId,
             quantity: item.quantity,
           })),
+          userId: user?.uid ?? null,
+          userEmail: user?.email ?? null,
         }),
       });
 
