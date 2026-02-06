@@ -20,6 +20,8 @@ type CheckoutItem = {
 export async function POST(request: Request) {
   const body = await request.json();
   const items: CheckoutItem[] = Array.isArray(body?.items) ? body.items : [];
+  const userId = typeof body?.userId === "string" ? body.userId : null;
+  const userEmail = typeof body?.userEmail === "string" ? body.userEmail : null;
 
   if (!items.length) {
     return NextResponse.json(
@@ -36,6 +38,9 @@ export async function POST(request: Request) {
     })),
     success_url: `${appUrl}/cart?success=true`,
     cancel_url: `${appUrl}/cart?canceled=true`,
+    customer_email: userEmail ?? undefined,
+    client_reference_id: userId ?? undefined,
+    metadata: userId ? { userId } : undefined,
   });
 
   return NextResponse.json({ url: session.url });

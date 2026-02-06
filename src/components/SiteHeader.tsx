@@ -46,6 +46,14 @@ export default function SiteHeader() {
           >
             Cart ({totalItems})
           </Link>
+          {user ? (
+            <Link
+              href="/account"
+              className="text-slate-600 transition hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+            >
+              Account
+            </Link>
+          ) : null}
           {isAdmin ? (
             <Link
               href="/admin/products"
