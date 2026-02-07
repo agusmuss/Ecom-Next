@@ -43,3 +43,6 @@ next-env.d.ts
 /webhook-server/node_modules
 /webhook-server/.env
 /webhook-server/serviceAccountKey.json
+# playwright
+/playwright-report
+/test-results
