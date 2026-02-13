@@ -35,6 +35,11 @@ npm install
 npm run dev
 ```
 
+## Possible Improvements
+- Add order history and user profile page
+- Add product search/filter and pagination
+- Add webhook-based Stripe payment confirmation
+
 ## Screenshots
 ![Products](docs/screenshot-1.png)
 ![Admin products](docs/screenshot-2.png)
